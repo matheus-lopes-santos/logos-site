@@ -4060,6 +4060,10 @@
     }
 
     var course = render(all);
+    /* vindo de um link com #inscricao (ex.: cartoes da home): a secao so existe depois do render */
+    if (course && location.hash === '#inscricao') {
+      setTimeout(function () { $('inscricao').scrollIntoView({ block: 'start' }); }, 60);
+    }
     L.live().then(function (d) { if (d && find(d)) course = render(d) || course; });
 
     /* barra fixa: aparece depois do topo e some na chamada final */
