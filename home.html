@@ -32,7 +32,7 @@
       --ease-out: cubic-bezier(.22, 1, .36, 1);
     }
 
-    html { scroll-behavior: smooth; font-size: 16px; }
+    html { scroll-behavior: smooth; font-size: 16px; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
     body {
       font-family: var(--ff-body);
@@ -41,7 +41,7 @@
       overflow-x: hidden;
     }
 
-    img { display: block; max-width: 100%; }
+    img { display: block; max-width: 100%; height: auto; }
     a   { color: inherit; text-decoration: none; }
 
     /* ─── Scrollbar ─── */
@@ -83,6 +83,7 @@
     .btn {
       display: inline-flex;
       align-items: center;
+      text-align: center;
       gap: 8px;
       padding: 14px 32px;
       font-family: var(--ff-body);
@@ -161,7 +162,8 @@
       gap: 16px;
     }
 
-    .nav-logo img { height: 58px; }
+    .nav-logo { flex-shrink: 0; }
+    .nav-logo img { height: 58px; width: auto; }
 
     .nav-links {
       display: flex;
@@ -223,6 +225,19 @@
       transform: translateY(8px);
       transition: opacity .25s var(--ease-out), transform .25s var(--ease-out);
       z-index: 200;
+    }
+
+    /* Ponte invisivel que cobre a lacuna de 10px entre o item e o painel.
+       Sem ela o :hover se perde no caminho e o submenu fecha antes de
+       o mouse alcancar os links. Herda pointer-events do painel, entao
+       so fica ativa quando o dropdown esta aberto. */
+    .nav-dropdown::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: -14px;
+      height: 14px;
     }
     .nav-item.has-dropdown:hover .nav-dropdown,
     .nav-item.has-dropdown:focus-within .nav-dropdown {
@@ -290,7 +305,8 @@
       flex-direction: column;
       gap: 5px;
       cursor: pointer;
-      padding: 4px;
+      padding: 10px;
+      margin: -6px;
       z-index: 1100;
       position: relative;
     }
@@ -317,16 +333,25 @@
       -webkit-backdrop-filter: blur(16px);
       z-index: 1050;
       overflow-y: auto;
+      overscroll-behavior: contain;
       transform: translateX(100%);
-      transition: transform .4s var(--ease-out);
-      padding: 90px 32px 48px;
+      visibility: hidden;
+      transition: transform .4s var(--ease-out), visibility 0s linear .4s;
+      padding: 90px clamp(20px, 6vw, 48px) 48px;
       flex-direction: column;
-      height: fit-content;
+      /* ocupa a tela toda e rola por dentro quando o conteudo passa da
+         altura (celular deitado, submenu aberto) */
+      height: 100vh;
+      height: 100dvh;
     }
     .nav-mobile-menu.is-open {
       transform: translateX(0);
+      visibility: visible;
+      transition: transform .4s var(--ease-out), visibility 0s;
     }
-    @media (max-width: 768px) {
+    /* em tablet a lista fica numa coluna central, sem esticar de ponta a ponta */
+    .nmm-links, .nmm-bottom { width: 100%; max-width: 560px; margin-left: auto; margin-right: auto; }
+    @media (max-width: 1080px) {
       .nav-mobile-menu { display: flex; }
     }
 
@@ -433,6 +458,7 @@
     #hero {
       position: relative;
       height: 100vh;
+      height: 100svh;
       min-height: 700px;
       display: flex;
       flex-direction: column;
@@ -685,8 +711,8 @@
     .disc-item:hover::before { transform: scaleX(1); }
 
     .disc-icon {
-      color: var(--gold);
-      opacity: .55;
+      color: var(--gold2);
+      opacity: .95;
       transition: opacity .3s, transform .35s var(--ease-out);
       flex-shrink: 0;
     }
@@ -700,7 +726,7 @@
       font-weight: 700;
       letter-spacing: .3em;
       color: var(--gold);
-      opacity: .7;
+      opacity: 1;
     }
 
     .disc-label {
@@ -709,7 +735,7 @@
       font-weight: 400;
       letter-spacing: .12em;
       text-transform: uppercase;
-      color: rgba(255,255,255,.75);
+      color: rgba(255,255,255,.95);
       transition: color .25s;
     }
     .disc-item:hover .disc-label { color: var(--white); }
@@ -718,11 +744,11 @@
       font-size: .6rem;
       font-weight: 300;
       letter-spacing: .05em;
-      color: rgba(255,255,255,.28);
+      color: rgba(255,255,255,.6);
       text-align: center;
       transition: color .25s;
     }
-    .disc-item:hover .disc-desc { color: rgba(255,255,255,.55); }
+    .disc-item:hover .disc-desc { color: rgba(255,255,255,.85); }
 
     /* Scroll indicator */
     .hero-scroll-ind {
@@ -939,6 +965,22 @@
       color: var(--gold);
       line-height: 1;
     }
+    /* efeito metalico: ouro escovado (claro em cima, brilho no meio, sombra embaixo)
+       e um reflexo de luz que atravessa o numero ao passar o mouse */
+    @supports ((-webkit-background-clip: text) or (background-clip: text)) {
+      .stat-number {
+        background-image:
+          linear-gradient(105deg, transparent 40%, rgba(255,250,230,.95) 50%, transparent 60%),
+          linear-gradient(180deg, #F7E7A8 0%, #E8C96A 28%, #B8913A 52%, #F3DC8C 66%, #C9A84C 82%, #8E6A1E 100%);
+        background-size: 250% 100%, 100% 100%;
+        background-position: 130% 0, 0 0;
+        background-repeat: no-repeat;
+        -webkit-background-clip: text; background-clip: text;
+        -webkit-text-fill-color: transparent; color: transparent;
+        transition: background-position 1.1s var(--ease-out);
+      }
+      .stat-item:hover .stat-number { background-position: -30% 0, 0 0; }
+    }
     .stat-label {
       margin-top: 6px;
       font-size: .72rem;
@@ -1040,23 +1082,38 @@
       box-shadow: 0 16px 48px rgba(0,0,0,.38);
     }
 
-    /* ── Image area ── */
+    /* ── Image area: capa quadrada recuada, como no cartao da pagina de cursos ── */
+    .course-card { padding: 9px; }
     .course-img-wrap {
-      height: 165px;
+      position: relative;
+      aspect-ratio: 1 / 1;
       overflow: hidden;
       flex-shrink: 0;
+      border-radius: 11px;
+      background: var(--navy);
+      /* recorte arredondado tambem no Safari ao ampliar a imagem */
+      isolation: isolate;
     }
     .course-img-wrap img {
       width: 100%; height: 100%;
       object-fit: cover;
       display: block;
-      transition: transform .6s var(--ease-out);
+      transition: transform 1s var(--ease-out);
     }
     .course-card:hover .course-img-wrap img { transform: scale(1.06); }
+    /* brilho que atravessa a capa ao passar o mouse */
+    .course-img-wrap::after {
+      content: ''; position: absolute; inset: -20% -60%;
+      background: linear-gradient(105deg, transparent 40%, rgba(255,240,200,.28) 50%, transparent 60%);
+      transform: translateX(-60%);
+      transition: transform 1.1s var(--ease-out);
+      pointer-events: none;
+    }
+    .course-card:hover .course-img-wrap::after { transform: translateX(60%); }
 
     /* ── Card body ── */
     .course-body {
-      padding: 18px 20px 20px;
+      padding: 16px 9px 9px;
       display: flex;
       flex-direction: column;
       flex: 1;
@@ -1439,6 +1496,34 @@
       color: var(--gold);
     }
 
+    /* grupos: corpo docente / convidados */
+    .prof-group { margin-top: 48px; }
+    .prof-head { display: flex; align-items: center; gap: 18px; margin-bottom: 22px; }
+    .prof-head h3 {
+      font-family: var(--ff-display);
+      font-size: 1.125rem; font-weight: 400;
+      letter-spacing: .06em; text-transform: uppercase;
+      color: var(--white);
+    }
+    .prof-head span { font-family: var(--ff-body); font-size: .75rem; color: rgba(255,255,255,.5); white-space: nowrap; }
+    .prof-head::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(201,168,76,.55), transparent); }
+    .prof-group .prof-grid { margin-top: 0; }
+    a.prof-card { display: block; color: inherit; text-decoration: none; }
+    a.prof-card:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+    .prof-more {
+      display: inline-flex; align-items: center; gap: 5px;
+      margin-top: 8px;
+      font-family: var(--ff-body); font-size: .6875rem; font-weight: 600;
+      color: rgba(255,255,255,.75);
+      opacity: 0; transform: translateY(4px);
+      transition: opacity .3s, transform .3s;
+    }
+    .prof-card:hover .prof-more, .prof-card:focus-visible .prof-more { opacity: 1; transform: none; }
+    @media (hover: none) { .prof-more { opacity: 1; transform: none; } }
+    @media (max-width: 560px) {
+      .prof-head h3 { font-size: 1rem; }
+    }
+
     /* ════════════════════════════════════
        CPA BANNER
     ════════════════════════════════════ */
@@ -1510,71 +1595,135 @@
     }
 
     /* ════════════════════════════════════
-       EVENTOS
+       EVENTOS — slider com ate 4 proximos eventos, um por vez
     ════════════════════════════════════ */
     #eventos {
       padding: 120px 0;
       background: var(--cream);
     }
+    .ev-all {
+      font-family: var(--ff-body); font-size: .8125rem; font-weight: 600;
+      color: var(--brown);
+      border-bottom: 1px solid rgba(139,105,20,.35); padding-bottom: 2px;
+      white-space: nowrap;
+    }
+    .ev-all:hover { color: var(--navy); border-color: var(--gold); }
 
-    .event-card {
-      display: grid;
-      grid-template-columns: 280px 1fr;
-      border: 1px solid rgba(0,0,0,.08);
-      background: var(--white);
+    .ev-cover {
+      position: relative;
+      aspect-ratio: 16 / 9;
       overflow: hidden;
-      transition: box-shadow .3s, transform .3s;
+      border-radius: 16px;
+      background: linear-gradient(160deg, var(--navy2), var(--navy));
+      isolation: isolate;
     }
-    .event-card:hover {
-      box-shadow: 0 12px 40px rgba(13,27,42,.12);
-      transform: translateY(-4px);
+    .ev-cover img { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .ev-cover-bg { object-fit: cover; filter: blur(18px) saturate(1.1); transform: scale(1.2); opacity: .75; }
+    .ev-cover-img { object-fit: contain; transition: transform 1s var(--ease-out); }
+    .ev-cover-ph { display: none; }
+    .ev-cover.is-empty img { display: none; }
+    .ev-cover.is-empty .ev-cover-ph {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+      padding: 18px; text-align: center;
+      background: radial-gradient(ellipse 80% 70% at 50% 0%, rgba(201,168,76,.28), transparent 70%), linear-gradient(160deg, var(--navy2), var(--navy));
     }
+    .ev-cover-ph b { font-family: var(--ff-display); font-weight: 400; font-size: 1.25rem; letter-spacing: .3em; color: rgba(201,168,76,.55); }
+    .ev-cover-ph i { font-family: var(--ff-display); font-style: normal; font-size: .75rem; line-height: 1.4; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.85); max-width: 26ch; }
 
-    .event-img {
-      width: 100%;
-      height: 220px;
-      object-fit: cover;
+    .ev-badge {
+      display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+      min-width: 64px; padding: 8px 10px 7px;
+      border-radius: 14px;
+      background: var(--navy); color: var(--white);
+      line-height: 1;
+      box-shadow: 0 6px 16px rgba(0,0,0,.14);
     }
+    .ev-badge b { font-family: var(--ff-display); font-size: 1.25rem; font-weight: 500; }
+    .ev-badge span { margin-top: 5px; font-family: var(--ff-body); font-size: .625rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--gold2); }
+    .ev-badge small { margin-top: 3px; font-family: var(--ff-body); font-size: .625rem; color: rgba(255,255,255,.55); }
+    .ev-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 11px; border-radius: 999px;
+      font-family: var(--ff-body); font-size: .6875rem; font-weight: 600;
+      color: var(--muted); border: 1px solid rgba(13,27,42,.12); background: var(--white);
+    }
+    .ev-pill.is-open { color: #23603F; border-color: rgba(46,125,82,.3); background: rgba(46,125,82,.07); }
+    .ev-pill.is-open::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #2E7D52; box-shadow: 0 0 0 3px rgba(46,125,82,.18); }
 
-    .event-body {
-      padding: 32px 36px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
+    /* folga para a sombra; cada slide tem o mesmo respiro dos lados, entao o vizinho nao aparece */
+    .evs-viewport { overflow: hidden; margin: -14px -14px; padding: 14px 0; }
+    .evs-track { display: flex; transition: transform .7s var(--ease-out); touch-action: pan-y; }
+    .evs-slide { flex: 0 0 100%; min-width: 0; padding: 0 14px; }
+    .evs-card {
+      position: relative;
+      display: grid; grid-template-columns: 460px 1fr;
+      padding: 10px;
+      border-radius: 24px;
+      background: var(--white);
+      border: 1px solid rgba(13,27,42,.07);
+      box-shadow: 0 1px 2px rgba(0,0,0,.05), 0 10px 26px rgba(0,0,0,.06);
+      transition: box-shadow .5s var(--ease-out);
     }
-
-    .event-date {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 12px;
-      font-size: .72rem;
-      font-weight: 600;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      color: var(--gold);
-    }
-    .event-date::before {
-      content: '';
-      width: 20px; height: 1px;
-      background: var(--gold);
-    }
-
-    .event-title {
+    .evs-card:hover { box-shadow: 0 2px 4px rgba(0,0,0,.06), 0 14px 34px rgba(0,0,0,.1); }
+    .evs-card:hover .ev-cover-img { transform: scale(1.03); }
+    .evs-card:focus-within { box-shadow: 0 0 0 2px var(--gold), 0 14px 34px rgba(0,0,0,.1); }
+    .evs-card .ev-cover { align-self: center; }
+    .evs-body { display: flex; flex-direction: column; justify-content: center; padding: 18px 30px 18px 34px; min-width: 0; }
+    .evs-top { display: flex; align-items: center; gap: 16px; }
+    .evs-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+    .evs-name {
+      margin-top: 16px;
       font-family: var(--ff-display);
-      font-size: 1.5rem;
-      font-weight: 600;
+      font-size: 1.3125rem; font-weight: 600; line-height: 1.3;
       color: var(--navy);
-      margin-bottom: 12px;
-      line-height: 1.2;
+      text-wrap: balance;
     }
+    .evs-name a::after { content: ''; position: absolute; inset: 0; z-index: 1; }
+    .evs-name a:focus-visible { outline: none; }
+    .evs-desc {
+      margin-top: 10px;
+      font-size: .9rem; font-weight: 300; line-height: 1.65; color: var(--muted);
+      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .evs-facts { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 14px; font-size: .8125rem; color: var(--text); }
+    .evs-facts span { display: inline-flex; align-items: center; gap: 7px; }
+    .evs-facts svg { color: var(--brown); flex-shrink: 0; }
+    .evs-actions { position: relative; z-index: 2; display: flex; align-items: center; flex-wrap: wrap; gap: 12px 22px; margin-top: 20px; }
+    .evs-actions .btn { border-radius: 999px; padding: 13px 26px; font-size: .78rem; }
+    .evs-link { display: inline-flex; align-items: center; gap: 6px; font-size: .8125rem; font-weight: 600; color: var(--brown); }
+    .evs-link svg { transition: transform .35s var(--ease-out); }
+    .evs-link:hover svg { transform: translateX(3px); }
 
-    .event-desc {
-      font-size: .9rem;
-      font-weight: 300;
-      color: var(--muted);
-      line-height: 1.65;
+    .evs-nav { display: flex; align-items: center; gap: 18px; margin-top: 26px; }
+    .evs-dots { display: flex; gap: 8px; }
+    .evs-dot { width: 8px; height: 8px; border-radius: 999px; border: 0; padding: 0; background: rgba(13,27,42,.18); cursor: pointer; transition: width .4s var(--ease-out), background .3s; }
+    .evs-dot[aria-current="true"] { width: 28px; background: var(--gold); }
+    .evs-count { font-family: var(--ff-display); font-size: .8125rem; letter-spacing: .12em; color: var(--muted); }
+    .evs-count b { color: var(--navy); font-weight: 600; }
+    .evs-arrows { display: flex; gap: 10px; margin-left: auto; }
+    .evs-arrow {
+      width: 46px; height: 46px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid rgba(13,27,42,.16); background: var(--white); color: var(--navy);
+      cursor: pointer;
+      transition: background .3s, color .3s, border-color .3s;
     }
+    .evs-arrow:hover { background: var(--navy); border-color: var(--navy); color: var(--gold2); }
+
+    .evs-empty {
+      display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 26px;
+      padding: 30px 34px;
+      border-radius: 24px;
+      background: var(--white);
+      border: 1px solid rgba(13,27,42,.07);
+      box-shadow: 0 1px 2px rgba(0,0,0,.05), 0 10px 26px rgba(0,0,0,.06);
+    }
+    .evs-empty-ico { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--navy); color: var(--gold2); box-shadow: 0 0 0 6px rgba(201,168,76,.16); }
+    .evs-empty h3 { font-family: var(--ff-display); font-size: 1.0625rem; font-weight: 600; color: var(--navy); }
+    .evs-empty p { margin-top: 6px; font-size: .875rem; line-height: 1.7; color: var(--muted); max-width: 54ch; }
+    .evs-empty .btn { border-radius: 999px; padding: 13px 26px; font-size: .78rem; }
+    .evs[hidden], .evs-empty[hidden], .evs-nav[hidden] { display: none; }
 
     /* ════════════════════════════════════
        DEPOIMENTOS
@@ -1973,19 +2122,30 @@
     /* ════════════════════════════════════
        RESPONSIVE
     ════════════════════════════════════ */
+    @media (max-width: 1199px) {
+      .nav-socials { display: none; }
+      .nav-item > a, .nav-links > li > a { padding: 6px 8px; }
+    }
+    @media (max-width: 1080px) {
+      .nav-links, .nav-cta, .nav-socials { display: none; }
+      .nav-hamburger { display: flex; }
+    }
+
     @media (max-width: 1024px) {
       .course-card { flex: 0 0 calc((100% - 40px) / 3); }
-      .prof-grid { grid-template-columns: repeat(3, 1fr); }
+      .prof-grid { grid-template-columns: repeat(4, 1fr); }
       .footer-grid { grid-template-columns: 1fr 1fr; }
+      .valores-inner, .contact-grid { gap: 48px; }
+      .evs-card { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+      .evs-body { padding: 16px 20px 16px 26px; }
     }
 
     @media (max-width: 768px) {
       /* ── Navbar ── */
-      .nav-links, .nav-cta, .nav-socials { display: none; }
-      .nav-hamburger { display: flex; }
       .nav-logo img { height: 44px; }
 
       /* ── Hero ── */
+      #hero { min-height: 560px; }
       .hero-kicker span {
         font-size: .85rem;
         letter-spacing: .18em;
@@ -1996,9 +2156,10 @@
       }
       .hero-subtitle { font-size: clamp(.85rem, 3.5vw, 1.2rem); }
       .hero-tagline {
-        font-size: .55rem;
-        letter-spacing: .14em;
-        padding: 0 16px;
+        font-size: .68rem;
+        letter-spacing: .12em;
+        line-height: 1.7;
+        padding: 0 8px;
       }
       .hero-disciplines { gap: 0; }
       .disc-item { padding: 12px 6px; gap: 4px; }
@@ -2017,6 +2178,9 @@
       /* ── Stats ── */
       .stats-grid { grid-template-columns: repeat(2, 1fr); }
       .stat-item  { text-align: center; }
+      #valores, #professores, #eventos, #contato { padding: 88px 0; }
+      #cpa { padding: 80px 0; }
+      #depoimentos { padding: 80px 0 72px; }
 
       /* ── Global: center all section headers ── */
       .section-label  { display: block; text-align: center; }
@@ -2042,8 +2206,7 @@
         padding: 7px 16px;
         font-size: .72rem;
       }
-      .course-card { flex: 0 0 82%; }
-      .course-img-wrap { height: 140px; }
+      .course-card { flex: 0 0 calc((100% - 20px) / 2); }
       .courses-footer-nav { margin-top: 20px; }
 
       /* ── Valores ── */
@@ -2058,45 +2221,131 @@
 
       /* ── Professores ── */
       #professores .section-header { text-align: center; }
-      .prof-grid { grid-template-columns: repeat(2, 1fr); }
+      .prof-grid { grid-template-columns: repeat(3, 1fr); }
 
       /* ── CPA ── */
       .cpa-content { grid-template-columns: 1fr; text-align: center; }
       .cpa-content .btn { margin: 0 auto; }
 
       /* ── Eventos ── */
-      .event-card { grid-template-columns: 1fr; }
-      .event-img  { height: 200px; }
-      .event-body { text-align: center; }
-      .event-date { justify-content: center; }
+      .evs-card { grid-template-columns: 1fr; padding: 8px; border-radius: 20px; }
+      .evs-body { padding: 16px 10px 10px; }
+      .evs-name { font-size: 1.0625rem; margin-top: 12px; }
+      .evs-desc { -webkit-line-clamp: 2; }
+      .evs-actions .btn { flex: 1; justify-content: center; }
+      .evs-arrow { width: 40px; height: 40px; }
+      .evs-empty { grid-template-columns: 1fr; justify-items: start; gap: 16px; padding: 24px 22px; }
+      .evs-empty .btn { width: 100%; justify-content: center; }
+      #eventos .section-header { flex-direction: column; align-items: center; text-align: center; gap: 14px; }
 
       /* ── Depoimentos ── */
-      .dep-header { text-align: center; }
-      .dep-card   { flex: 0 0 84%; }
+      .dep-header { text-align: center; margin-bottom: 56px; }
 
       /* ── Contato ── */
       .contact-grid { grid-template-columns: 1fr; gap: 40px; }
       .contact-info { text-align: center; }
       .contact-details li { justify-content: center; }
-      .form-row { grid-template-columns: 1fr; }
 
       /* ── Footer ── */
-      .footer-grid    { grid-template-columns: 1fr; }
+      #footer         { padding: 56px 0 28px; }
+      .footer-grid    { grid-template-columns: 1fr 1fr; gap: 40px 24px; padding-bottom: 44px; }
+      .footer-brand,
+      .footer-col:last-child { grid-column: 1 / -1; }
       .footer-brand   { text-align: center; }
-      .footer-brand p { max-width: 100%; }
+      .footer-brand img { margin: 0 auto 20px; }
+      .footer-brand p { max-width: 420px; margin: 0 auto; }
       .footer-socials { justify-content: center; }
       .footer-col     { text-align: center; }
+      .footer-col h4  { margin-bottom: 18px; }
+      .footer-qr      { margin: 0 auto 12px; }
       .footer-bottom  { flex-direction: column; gap: 12px; text-align: center; }
     }
 
+    @media (min-width: 640px) and (max-width: 768px) {
+      .stats-grid { grid-template-columns: repeat(4, 1fr); }
+      .stat-item  { padding: 30px 10px; }
+      .stat-number { font-size: 2.3rem; }
+    }
+
+    @media (max-width: 599px) {
+      #valores, #professores, #eventos, #contato { padding: 72px 0; }
+      #cpa { padding: 64px 0; }
+      #depoimentos { padding: 72px 0 64px; }
+
+      /* faixa de areas do hero em 2x2: os nomes cabem sem cortar */
+      .hero-disciplines { display: grid; grid-template-columns: 1fr 1fr; }
+      .disc-item { max-width: none; padding: 12px 6px 11px; }
+      .disc-item:nth-child(2n) { border-right: none; }
+      .disc-item:nth-child(n+3) { box-shadow: inset 0 1px 0 rgba(128,128,128,.14); }
+      .disc-label { font-size: .68rem; letter-spacing: .1em; }
+      .disc-num   { font-size: .5rem; }
+      .hero-scroll-ind { display: none; }
+      .hero-kicker { gap: 10px; }
+      .hero-kicker::before, .hero-kicker::after { width: 22px; }
+
+      .stat-item   { padding: 28px 12px; }
+      .stat-number { font-size: 2.3rem; }
+
+      .course-card { flex: 0 0 82%; }
+      .prof-grid   { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+      .prof-info   { padding: 18px 10px 12px; }
+      .prof-name   { font-size: .85rem; }
+      .prof-role   { font-size: .6rem; letter-spacing: .06em; }
+
+      .dep-title-pill { padding: 12px 26px; border-radius: 28px; }
+      .dep-title-pill .section-title { font-size: clamp(1.25rem, 5.6vw, 1.6rem); }
+      .dep-card { padding: 52px 22px 28px; }
+
+      .form-row { grid-template-columns: 1fr; gap: 0; }
+    }
+
     @media (max-width: 480px) {
+      .footer-grid { grid-template-columns: 1fr; gap: 36px; }
       .hero-title { font-size: clamp(1.5rem, 7vw, 2.2rem); }
       .course-card { flex: 0 0 88%; }
       .dep-card    { flex: 0 0 90%; }
       .courses-header .section-title { font-size: 1.4rem; }
     }
 
+    /* Celular: os cursos rolam com o dedo (sem setas) e cada card encaixa
+       no centro da tela. As faixas ::before/::after deixam o primeiro e o
+       ultimo card tambem centralizados. */
+    @media (max-width: 599px) {
+      .courses-overflow {
+        overflow-x: auto; overflow-y: hidden;
+        scroll-snap-type: x mandatory;
+        overscroll-behavior-x: contain;
+        scrollbar-width: none;
+        padding: 6px 0 16px; margin: -6px 0 -16px;
+      }
+      .courses-overflow::-webkit-scrollbar { display: none; }
+      .courses-track { gap: 12px; transform: none !important; transition: none; }
+      .courses-track::before, .courses-track::after { content: ''; flex: 0 0 calc(8% - 12px); }
+      .course-card { flex: 0 0 84%; scroll-snap-align: center; scroll-snap-stop: always; }
+      .course-card:hover { transform: none; }
+      .slider-btns { display: none; }
+      .courses-footer-nav { justify-content: center; }
+
+      /* depoimentos: o mesmo arrastar com o dedo, card no centro */
+      .dep-overflow {
+        overflow-x: auto; overflow-y: hidden;
+        scroll-snap-type: x mandatory;
+        overscroll-behavior-x: contain;
+        scrollbar-width: none;
+        padding-bottom: 16px; margin-bottom: -16px;
+      }
+      .dep-overflow::-webkit-scrollbar { display: none; }
+      .dep-track { gap: 12px; transform: none !important; transition: none; }
+      .dep-track::before, .dep-track::after { content: ''; flex: 0 0 calc(7% - 12px); }
+      .dep-card { flex: 0 0 86%; scroll-snap-align: center; scroll-snap-stop: always; }
+      .dep-card:hover { transform: none; }
+      .dep-btns { display: none; }
+      .dep-footer-nav { justify-content: center; }
+    }
+
   </style>
+  <script src="assets/eventos/dados.js"></script>
+  <script src="assets/eventos/eventos.js"></script>
 </head>
 
 <body>
@@ -2116,23 +2365,23 @@
           <li class="nav-item"><a href="#">Home</a></li>
 
           <li class="nav-item has-dropdown">
-            <a href="#valores">Sobre Nós</a>
+            <a href="sobre-nos.html">Sobre Nós</a>
             <div class="nav-dropdown">
-              <a href="#">Mantenedora</a>
-              <a href="#valores">Faculdade Batista Logos</a>
-              <a href="#">Núcleos e Comissões</a>
-              <a href="#cpa">CPA</a>
-              <a href="#">Extensões</a>
-              <a href="#">Biblioteca</a>
+              <a href="sobre-nos.html">Mantenedora</a>
+              <a href="faculdade.html">Faculdade Batista Logos</a>
+              <a href="nucleos.html">Núcleos e Comissões</a>
+              <a href="cpa.html">CPA</a>
+              <a href="extensoes.html">Extensões</a>
+              <a href="biblioteca.html">Biblioteca</a>
             </div>
           </li>
 
-          <li class="nav-item"><a href="#cursos">Cursos</a></li>
-          <li class="nav-item"><a href="#professores">Professores</a></li>
-          <li class="nav-item"><a href="#cpa">CPA</a></li>
-          <li class="nav-item"><a href="#eventos">Eventos</a></li>
-          <li class="nav-item"><a href="#">Área do Aluno</a></li>
-          <li class="nav-item"><a href="#contato">Contato</a></li>
+          <li class="nav-item"><a href="cursos.html">Cursos</a></li>
+          <li class="nav-item"><a href="professores.html">Professores</a></li>
+          <li class="nav-item"><a href="cpa.html">CPA</a></li>
+          <li class="nav-item"><a href="eventos.html">Eventos</a></li>
+          <li class="nav-item"><a href="http://educacional.usecerbrum.net/" target="_blank" rel="noopener">Área do Aluno</a></li>
+          <li class="nav-item"><a href="contato.html">Contato</a></li>
         </ul>
 
         <!-- Right: socials + CTA + hamburger -->
@@ -2178,21 +2427,21 @@
             Sobre Nós <span class="nmm-chevron"></span>
           </div>
           <ul class="nmm-sub">
-            <li><a href="#">Mantenedora</a></li>
-            <li><a href="#valores">Faculdade Batista Logos</a></li>
-            <li><a href="#">Núcleos e Comissões</a></li>
-            <li><a href="#cpa">CPA</a></li>
-            <li><a href="#">Extensões</a></li>
-            <li><a href="#">Biblioteca</a></li>
+            <li><a href="sobre-nos.html">Mantenedora</a></li>
+            <li><a href="faculdade.html">Faculdade Batista Logos</a></li>
+            <li><a href="nucleos.html">Núcleos e Comissões</a></li>
+            <li><a href="cpa.html">CPA</a></li>
+            <li><a href="extensoes.html">Extensões</a></li>
+            <li><a href="biblioteca.html">Biblioteca</a></li>
           </ul>
         </li>
 
-        <li><a href="#cursos">Cursos</a></li>
-        <li><a href="#professores">Professores</a></li>
-        <li><a href="#cpa">CPA</a></li>
-        <li><a href="#eventos">Eventos</a></li>
-        <li><a href="#">Área do Aluno</a></li>
-        <li><a href="#contato">Contato</a></li>
+        <li><a href="cursos.html">Cursos</a></li>
+        <li><a href="professores.html">Professores</a></li>
+        <li><a href="cpa.html">CPA</a></li>
+        <li><a href="eventos.html">Eventos</a></li>
+        <li><a href="http://educacional.usecerbrum.net/" target="_blank" rel="noopener">Área do Aluno</a></li>
+        <li><a href="contato.html">Contato</a></li>
       </ul>
 
       <div class="nmm-bottom">
@@ -2633,108 +2882,116 @@
           <p class="section-label">Corpo docente</p>
           <h2 class="section-title light">Nossos professores</h2>
         </div>
-        <a href="#" class="btn btn-outline">Ver todos</a>
+        <a href="professores.html" class="btn btn-outline">Ver todos</a>
       </div>
 
-      <div class="prof-grid">
-
-        <div class="prof-card reveal">
-          <img src="assets/c17bc106ed376968_arnom.png" alt="Arnom" />
+      <section class="prof-group" data-g="fixo" aria-label="Corpo docente">
+        <header class="prof-head reveal"><h3>Corpo docente</h3><span>8 professores</span></header>
+        <div class="prof-grid">
+        <a class="prof-card reveal" href="professor.html?id=-OVp9XEyMvKwF6wvdTyK">
+          <img src="assets/c17bc106ed376968_arnom.png" alt="Arnom" loading="lazy" />
           <div class="prof-info">
             <div class="prof-name">Arnom</div>
             <div class="prof-role">Teologia Sistemática</div>
+            <span class="prof-more">Ver perfil <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
           </div>
-        </div>
-
-        <div class="prof-card reveal reveal-delay-1">
-          <img src="assets/206f404fcd304b5a_wagner-lima-amaral.png" alt="Wagner Lima Amaral" />
+        </a>
+        <a class="prof-card reveal reveal-delay-1" href="professor.html?id=-NjUUH2G5U3-o06qN_wN">
+          <img src="assets/206f404fcd304b5a_wagner-lima-amaral.png" alt="Wagner Lima Amaral" loading="lazy" />
           <div class="prof-info">
             <div class="prof-name">Wagner Lima Amaral</div>
             <div class="prof-role">Hermenêutica Bíblica</div>
+            <span class="prof-more">Ver perfil <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
           </div>
-        </div>
-
-        <div class="prof-card reveal reveal-delay-2">
-          <img src="assets/22ef441ee328a18e_pedro-evaristo-santos-prof.png" alt="Pedro Evaristo Santos" />
+        </a>
+        <a class="prof-card reveal reveal-delay-2" href="professor.html?id=-NjUTvSmZcwGcZ2wRY7M">
+          <img src="assets/22ef441ee328a18e_pedro-evaristo-santos-prof.png" alt="Pedro Evaristo Santos" loading="lazy" />
           <div class="prof-info">
             <div class="prof-name">Pedro Evaristo Santos</div>
             <div class="prof-role">Antigo Testamento</div>
+            <span class="prof-more">Ver perfil <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
           </div>
-        </div>
-
-        <div class="prof-card reveal reveal-delay-3">
-          <img src="assets/4075c478700edea7_joseph-arthur-prof.png" alt="Joseph Arthur" />
+        </a>
+        <a class="prof-card reveal reveal-delay-3" href="professor.html?id=-NjUSv_UT3CCw6fBsuKX">
+          <img src="assets/4075c478700edea7_joseph-arthur-prof.png" alt="Joseph Arthur" loading="lazy" />
           <div class="prof-info">
             <div class="prof-name">Joseph Arthur</div>
             <div class="prof-role">Novo Testamento</div>
+            <span class="prof-more">Ver perfil <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
           </div>
-        </div>
-
-        <div class="prof-card reveal">
-          <img src="assets/870dfc2147712b46_carlos-bacoccina.png" alt="Carlos Bacoccina" />
+        </a>
+        <a class="prof-card reveal" href="professor.html?id=-NjURqKhJzoHqs5EWza6">
+          <img src="assets/870dfc2147712b46_carlos-bacoccina.png" alt="Carlos Bacoccina" loading="lazy" />
           <div class="prof-info">
             <div class="prof-name">Carlos Bacoccina</div>
             <div class="prof-role">Filosofia e Apologética</div>
+            <span class="prof-more">Ver perfil <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
           </div>
-        </div>
-
-        <div class="prof-card reveal reveal-delay-1">
-          <img src="assets/d90beef6d1388c0e_agda-yumi-profa.png" alt="Agda Yumi" />
+        </a>
+        <a class="prof-card reveal" href="professor.html?id=-NjQrUDPc7ff-5kduWn9">
+          <img src="assets/d90beef6d1388c0e_agda-yumi-profa.png" alt="Agda Yumi" loading="lazy" />
           <div class="prof-info">
             <div class="prof-name">Agda Yumi</div>
             <div class="prof-role">Aconselhamento Pastoral</div>
+            <span class="prof-more">Ver perfil <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
           </div>
-        </div>
-
-        <div class="prof-card reveal reveal-delay-2">
-          <img src="assets/721113f9a8e96068_valney-veras.png" alt="Valney Veras" />
-          <div class="prof-info">
-            <div class="prof-name">Valney Veras</div>
-            <div class="prof-role">Missões e Evangelismo</div>
-          </div>
-        </div>
-
-        <div class="prof-card reveal reveal-delay-3">
-          <img src="assets/a512241c016378f7_elcio-bernardino-prof.png" alt="Elcio Bernardino" />
+        </a>
+        <a class="prof-card reveal" href="professor.html?id=-NjUSHpxtS69Yq2HY76u">
+          <img src="assets/a512241c016378f7_elcio-bernardino-prof.png" alt="Elcio Bernardino" loading="lazy" />
           <div class="prof-info">
             <div class="prof-name">Elcio Bernardino</div>
             <div class="prof-role">História da Igreja</div>
+            <span class="prof-more">Ver perfil <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
           </div>
-        </div>
-
-        <div class="prof-card reveal">
-          <img src="assets/1c83f22c0754d46d_fernando-sousa.png" alt="Fernando Sousa" />
-          <div class="prof-info">
-            <div class="prof-name">Fernando Sousa</div>
-            <div class="prof-role">Homilética</div>
-          </div>
-        </div>
-
-        <div class="prof-card reveal reveal-delay-1">
-          <img src="assets/ad425aff69a654cb_allan-cuthbert.png" alt="Allan Cuthbert" />
-          <div class="prof-info">
-            <div class="prof-name">Allan Cuthbert</div>
-            <div class="prof-role">Teologia Pastoral</div>
-          </div>
-        </div>
-
-        <div class="prof-card reveal reveal-delay-2">
-          <img src="assets/c4e3fd42ed92e194_alexandre-mendes.png" alt="Alexandre Mendes" />
-          <div class="prof-info">
-            <div class="prof-name">Alexandre Mendes</div>
-            <div class="prof-role">Liderança Cristã</div>
-          </div>
-        </div>
-
-        <div class="prof-card reveal reveal-delay-3">
-          <img src="assets/056d71e24a01345d_thiago-moreira-prof.png" alt="Thiago Moreira" />
+        </a>
+        <a class="prof-card reveal reveal-delay-1" href="professor.html?id=-NjUZeksDrDy7UFdWzqH">
+          <img src="assets/056d71e24a01345d_thiago-moreira-prof.png" alt="Thiago Moreira" loading="lazy" />
           <div class="prof-info">
             <div class="prof-name">Thiago Moreira</div>
             <div class="prof-role">Grego e Hebraico</div>
+            <span class="prof-more">Ver perfil <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
           </div>
+        </a>
         </div>
+      </section>
 
-      </div>
+      <section class="prof-group" data-g="convidado" aria-label="Professores convidados">
+        <header class="prof-head reveal"><h3>Professores convidados</h3><span>4 professores</span></header>
+        <div class="prof-grid">
+        <a class="prof-card reveal" href="professor.html?id=-NjUVh-Rjqotvcgf4GtL">
+          <img src="assets/721113f9a8e96068_valney-veras.png" alt="Valney Veras" loading="lazy" />
+          <div class="prof-info">
+            <div class="prof-name">Valney Veras</div>
+            <div class="prof-role">Missões e Evangelismo</div>
+            <span class="prof-more">Ver perfil <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+          </div>
+        </a>
+        <a class="prof-card reveal reveal-delay-1" href="professor.html?id=-NjUWQ7cnqFoTBItUiAU">
+          <img src="assets/1c83f22c0754d46d_fernando-sousa.png" alt="Fernando Sousa" loading="lazy" />
+          <div class="prof-info">
+            <div class="prof-name">Fernando Sousa</div>
+            <div class="prof-role">Homilética</div>
+            <span class="prof-more">Ver perfil <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+          </div>
+        </a>
+        <a class="prof-card reveal reveal-delay-2" href="professor.html?id=-NjUVszAJmKZjzIKVpL5">
+          <img src="assets/ad425aff69a654cb_allan-cuthbert.png" alt="Allan Cuthbert" loading="lazy" />
+          <div class="prof-info">
+            <div class="prof-name">Allan Cuthbert</div>
+            <div class="prof-role">Teologia Pastoral</div>
+            <span class="prof-more">Ver perfil <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+          </div>
+        </a>
+        <a class="prof-card reveal reveal-delay-3" href="professor.html?id=-NjUWwu2j4rdcYdUDVGU">
+          <img src="assets/c4e3fd42ed92e194_alexandre-mendes.png" alt="Alexandre Mendes" loading="lazy" />
+          <div class="prof-info">
+            <div class="prof-name">Alexandre Mendes</div>
+            <div class="prof-role">Liderança Cristã</div>
+            <span class="prof-more">Ver perfil <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+          </div>
+        </a>
+        </div>
+      </section>
     </div>
   </section>
 
@@ -2757,7 +3014,7 @@
           </p>
         </div>
         <div class="reveal reveal-delay-2">
-          <a href="#" class="btn btn-gold">Saiba mais sobre a CPA</a>
+          <a href="cpa.html" class="btn btn-gold">Saiba mais sobre a CPA</a>
         </div>
       </div>
     </div>
@@ -2771,19 +3028,29 @@
           <p class="section-label">Agenda acadêmica</p>
           <h2 class="section-title">Próximos eventos</h2>
         </div>
+        <a class="ev-all" href="eventos.html">Ver agenda completa</a>
       </div>
 
-      <div class="event-card reveal">
-        <img class="event-img" src="assets/5f1264a8ed6c9934_semana-teologica-ai.png" alt="Semana Teológica" />
-        <div class="event-body">
-          <div class="event-date">Junho · 2026</div>
-          <h3 class="event-title">Semana Teológica — IA, Fé e Missão</h3>
-          <p class="event-desc">
-            Um evento de imersão que explora as intersecções entre inteligência artificial,
-            ética cristã e a missão da Igreja no mundo contemporâneo. Palestrantes convidados,
-            workshops e cultos de adoração.
-          </p>
+      <!-- ate 4 proximos eventos (assets/eventos), um por vez -->
+      <div class="evs reveal" id="evs" role="region" aria-roledescription="carrossel" aria-label="Próximos eventos" hidden>
+        <div class="evs-viewport"><div class="evs-track" id="evsTrack" aria-live="polite"></div></div>
+        <div class="evs-nav" id="evsNav" hidden>
+          <div class="evs-dots" id="evsDots"></div>
+          <span class="evs-count" id="evsCount"></span>
+          <div class="evs-arrows">
+            <button type="button" class="evs-arrow" id="evsPrev" aria-label="Evento anterior"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg></button>
+            <button type="button" class="evs-arrow" id="evsNext" aria-label="Próximo evento"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg></button>
+          </div>
         </div>
+      </div>
+
+      <div class="evs-empty reveal" id="evsEmpty" hidden>
+        <span class="evs-empty-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg></span>
+        <div>
+          <h3>Novos eventos em breve</h3>
+          <p>No momento não há eventos com inscrições abertas. Veja como foram os últimos congressos e cursos da Logos.</p>
+        </div>
+        <a class="btn btn-gold" href="eventos.html#anteriores">Eventos anteriores</a>
       </div>
     </div>
   </section>
@@ -2988,11 +3255,11 @@
         <div class="footer-col">
           <h4>Cursos</h4>
           <ul>
-            <li><a href="#">Bacharel em Teologia</a></li>
-            <li><a href="#">Pós-Graduação em Teologia</a></li>
-            <li><a href="#">Pós-Graduação em Missões</a></li>
-            <li><a href="#">Pós em Aconselhamento</a></li>
-            <li><a href="#">Liderança e Gestão</a></li>
+            <li><a href="curso.html?id=-NjV17XWZ_awKpQdPdqY">Bacharel em Teologia</a></li>
+            <li><a href="curso.html?id=-NjV30_pVVxjMC1UxdKW">Pós-Graduação em Teologia</a></li>
+            <li><a href="curso.html?id=-OAskowfu5_AvOzQtwar">Pós-Graduação em Missões</a></li>
+            <li><a href="curso.html?id=-NjUuHx38hEp7V4QCox_">Pós em Aconselhamento</a></li>
+            <li><a href="curso.html?id=-NjUxHTqc8ECzr8pxlJg">Liderança e Gestão</a></li>
           </ul>
         </div>
 
@@ -3000,9 +3267,9 @@
           <h4>Institucional</h4>
           <ul>
             <li><a href="#">Sobre a Logos</a></li>
-            <li><a href="#">Corpo Docente</a></li>
+            <li><a href="professores.html?grupo=fixo">Corpo Docente</a></li>
             <li><a href="#">CPA</a></li>
-            <li><a href="#">Eventos</a></li>
+            <li><a href="eventos.html">Eventos</a></li>
             <li><a href="#">Blog</a></li>
           </ul>
         </div>
@@ -3096,6 +3363,15 @@
       });
     });
 
+    /* Ao girar o tablet ou alargar a janela ate o layout de desktop, fecha
+       o menu para a pagina nao ficar travada sem rolagem */
+    window.matchMedia('(min-width: 1081px)').addEventListener('change', e => {
+      if (!e.matches) return;
+      mobileMenu.classList.remove('is-open');
+      hamburger.classList.remove('is-open');
+      document.body.style.overflow = '';
+    });
+
     /* Intersection Observer for reveal animations */
     const revealEls = document.querySelectorAll('.reveal');
     const observer = new IntersectionObserver((entries) => {
@@ -3156,8 +3432,13 @@
       let current = 0;
       let activeCards = allCards;
 
+      /* no celular a faixa rola com o dedo (CSS); cada card e uma posicao */
+      const isSwipe = () => getComputedStyle(overflow).overflowX === 'auto';
+
       function visible() {
-        return window.innerWidth < 640 ? 1 : window.innerWidth < 768 ? 1 : window.innerWidth < 1024 ? 3 : 4;
+        if (isSwipe()) return 1;
+        const w = activeCards.length ? activeCards[0].offsetWidth : 0;
+        return w ? Math.max(1, Math.floor((overflow.clientWidth + 20) / (w + 20) + .05)) : 1;
       }
 
       function max() {
@@ -3176,12 +3457,24 @@
         }
       }
 
-      function go(n) {
+      function go(n, smooth = true) {
         current = Math.max(0, Math.min(n, max()));
         if (activeCards.length === 0) return;
-        const gap   = 20;
-        const cardW = activeCards[0].offsetWidth + gap;
-        track.style.transform = 'translateX(-' + (current * cardW) + 'px)';
+        if (isSwipe()) {
+          /* rola ate deixar o card no centro da faixa */
+          const o = overflow.getBoundingClientRect();
+          const r = activeCards[current].getBoundingClientRect();
+          overflow.scrollTo({ left: overflow.scrollLeft + r.left - o.left - (o.width - r.width) / 2, behavior: smooth ? 'smooth' : 'auto' });
+        } else {
+          overflow.scrollLeft = 0;
+          const gap   = 20;
+          const cardW = activeCards[0].offsetWidth + gap;
+          track.style.transform = 'translateX(-' + (current * cardW) + 'px)';
+        }
+        updateUI();
+      }
+
+      function updateUI() {
         prevBtn.classList.toggle('is-disabled', current === 0);
         nextBtn.classList.toggle('is-disabled', current >= max());
         document.querySelectorAll('.slider-dot').forEach((d, i) => {
@@ -3203,8 +3496,9 @@
 
         setTimeout(() => {
           track.style.transition = '';
+          overflow.scrollLeft = 0;
           buildDots();
-          go(0);
+          go(0, false);
         }, 20);
       }
 
@@ -3219,17 +3513,34 @@
         });
       });
 
-      /* Touch/swipe */
+      /* Touch/swipe (tablet; no celular a rolagem e nativa) */
       let startX = 0;
       overflow.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive: true });
       overflow.addEventListener('touchend', e => {
+        if (isSwipe()) return;
         const dx = e.changedTouches[0].clientX - startX;
         if (Math.abs(dx) > 50) go(dx < 0 ? current + 1 : current - 1);
       });
 
+      /* no celular, a bolinha ativa acompanha o card que esta no centro */
+      let raf = 0;
+      overflow.addEventListener('scroll', () => {
+        if (!isSwipe()) return;
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(() => {
+          const o = overflow.getBoundingClientRect(), mid = o.left + o.width / 2;
+          let best = 0, dist = Infinity;
+          activeCards.forEach((c, i) => {
+            const r = c.getBoundingClientRect(), d = Math.abs(r.left + r.width / 2 - mid);
+            if (d < dist) { dist = d; best = i; }
+          });
+          if (best !== current) { current = best; updateUI(); }
+        });
+      }, { passive: true });
+
       function init() { applyFilter('all'); }
       init();
-      window.addEventListener('resize', () => go(Math.min(current, max())));
+      window.addEventListener('resize', () => { buildDots(); go(Math.min(current, max()), false); });
     })();
 
     /* ── Depoimentos Slider ── */
@@ -3243,8 +3554,13 @@
 
       let current = 0;
 
+      /* no celular a faixa rola com o dedo (CSS); cada card e uma posicao */
+      const isSwipe = () => getComputedStyle(overflow).overflowX === 'auto';
+
       function visible() {
-        return window.innerWidth < 640 ? 1 : window.innerWidth < 1024 ? 2 : 3;
+        if (isSwipe()) return 1;
+        const w = cards[0].offsetWidth;
+        return w ? Math.max(1, Math.floor((overflow.clientWidth + 24) / (w + 24) + .05)) : 1;
       }
       function max() { return Math.max(0, cards.length - visible()); }
 
@@ -3259,10 +3575,22 @@
         }
       }
 
-      function go(n) {
+      function go(n, smooth = true) {
         current = Math.max(0, Math.min(n, max()));
-        const cardW = cards[0].offsetWidth + 24;
-        track.style.transform = 'translateX(-' + (current * cardW) + 'px)';
+        if (isSwipe()) {
+          /* rola ate deixar o card no centro da faixa */
+          const o = overflow.getBoundingClientRect();
+          const r = cards[current].getBoundingClientRect();
+          overflow.scrollTo({ left: overflow.scrollLeft + r.left - o.left - (o.width - r.width) / 2, behavior: smooth ? 'smooth' : 'auto' });
+        } else {
+          overflow.scrollLeft = 0;
+          const cardW = cards[0].offsetWidth + 24;
+          track.style.transform = 'translateX(-' + (current * cardW) + 'px)';
+        }
+        updateUI();
+      }
+
+      function updateUI() {
         prevBtn.classList.toggle('is-disabled', current === 0);
         nextBtn.classList.toggle('is-disabled', current >= max());
         document.querySelectorAll('.dep-dot').forEach((d, i) =>
@@ -3275,14 +3603,122 @@
       let startX = 0;
       overflow.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive: true });
       overflow.addEventListener('touchend', e => {
+        if (isSwipe()) return;
         const dx = e.changedTouches[0].clientX - startX;
         if (Math.abs(dx) > 50) go(dx < 0 ? current + 1 : current - 1);
       });
 
+      /* no celular, a bolinha ativa acompanha o card que esta no centro */
+      let raf = 0;
+      overflow.addEventListener('scroll', () => {
+        if (!isSwipe()) return;
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(() => {
+          const o = overflow.getBoundingClientRect(), mid = o.left + o.width / 2;
+          let best = 0, dist = Infinity;
+          cards.forEach((c, i) => {
+            const r = c.getBoundingClientRect(), d = Math.abs(r.left + r.width / 2 - mid);
+            if (d < dist) { dist = d; best = i; }
+          });
+          if (best !== current) { current = best; updateUI(); }
+        });
+      }, { passive: true });
+
       buildDots();
-      go(0);
-      window.addEventListener('resize', () => { buildDots(); go(Math.min(current, max())); });
+      go(0, false);
+      window.addEventListener('resize', () => { buildDots(); go(Math.min(current, max()), false); });
     })();
+  </script>
+
+  <!-- Proximos eventos: slider com ate 4, um por vez -->
+  <script>
+  (function () {
+    var E = window.LogosEventos; if (!E) return;
+    var $ = function (id) { return document.getElementById(id); };
+    var e = E.esc, DETAIL = 'evento.html', MAX = 4, DELAY = 7000;
+    var SV = function (d) { return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + '</svg>'; };
+    var IC = {
+      cal: SV('<rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/>'),
+      pin: SV('<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>'),
+      clock: SV('<circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/>'),
+      arrow: SV('<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>')
+    };
+    var list = [], cur = 0, timer = null, paused = false;
+    var still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function slide(ev, i, n) {
+      var t = E.firstTime(ev), url = E.detailUrl(ev, DETAIL);
+      return '<div class="evs-slide" role="group" aria-roledescription="slide" aria-label="' + (i + 1) + ' de ' + n + '"' + (i ? ' aria-hidden="true"' : '') + '>' +
+        '<article class="evs-card">' + E.cover(ev) +
+          '<div class="evs-body">' +
+            '<div class="evs-top">' + E.badge(ev) +
+              '<div class="evs-pills"><span class="ev-pill is-open">Inscrições abertas</span>' + (ev.format ? '<span class="ev-pill">' + e(ev.format) + '</span>' : '') + '</div>' +
+            '</div>' +
+            '<h3 class="evs-name"><a href="' + e(url) + '">' + e(ev.name) + '</a></h3>' +
+            (ev.description.length ? '<p class="evs-desc">' + e(ev.description.join(' ')) + '</p>' : '') +
+            '<p class="evs-facts"><span>' + IC.cal + e(E.dateLabel(ev)) + '</span>' + (t ? '<span>' + IC.clock + e(t) + '</span>' : '') + '<span>' + IC.pin + e(E.place(ev)) + '</span></p>' +
+            '<div class="evs-actions"><a class="btn btn-gold" href="' + e(url) + '">Ver detalhes</a>' +
+              '<a class="evs-link" href="' + e(ev.subscribeUrl) + '" target="_blank" rel="noopener">Inscrever-se ' + IC.arrow + '</a></div>' +
+          '</div>' +
+        '</article></div>';
+    }
+
+    function go(i) {
+      var n = list.length; if (!n) return;
+      cur = (i + n) % n;
+      $('evsTrack').style.transform = 'translateX(' + (-100 * cur) + '%)';
+      [].forEach.call($('evsTrack').children, function (s, k) {
+        s.setAttribute('aria-hidden', k !== cur);
+        s.querySelectorAll('a').forEach(function (a) { a.tabIndex = k === cur ? 0 : -1; });
+      });
+      [].forEach.call($('evsDots').children, function (d, k) { d.setAttribute('aria-current', k === cur); });
+      $('evsCount').innerHTML = '<b>' + ('0' + (cur + 1)).slice(-2) + '</b> / ' + ('0' + n).slice(-2);
+    }
+    function play() {
+      clearInterval(timer);
+      if (list.length > 1 && !still) timer = setInterval(function () { if (!paused && !document.hidden) go(cur + 1); }, DELAY);
+    }
+
+    function render(all) {
+      list = E.upcoming(all).slice(0, MAX);
+      var n = list.length;
+      $('evs').hidden = !n; $('evsEmpty').hidden = !!n;
+      $('evsNav').hidden = n < 2;
+      $('evsTrack').innerHTML = list.map(function (ev, i) { return slide(ev, i, n); }).join('');
+      $('evsDots').innerHTML = list.map(function (ev, i) {
+        return '<button type="button" class="evs-dot" aria-label="Ver evento ' + (i + 1) + ': ' + e(ev.name) + '"></button>';
+      }).join('');
+      go(Math.min(cur, Math.max(n - 1, 0)));
+      play();
+    }
+
+    $('evsPrev').addEventListener('click', function () { go(cur - 1); play(); });
+    $('evsNext').addEventListener('click', function () { go(cur + 1); play(); });
+    $('evsDots').addEventListener('click', function (ev) {
+      var b = ev.target.closest('.evs-dot'); if (!b) return;
+      go([].indexOf.call($('evsDots').children, b)); play();
+    });
+    var box = $('evs');
+    box.addEventListener('mouseenter', function () { paused = true; });
+    box.addEventListener('mouseleave', function () { paused = false; });
+    box.addEventListener('focusin', function () { paused = true; });
+    box.addEventListener('focusout', function () { paused = false; });
+    box.addEventListener('keydown', function (ev) {
+      if (ev.key === 'ArrowRight') { go(cur + 1); play(); }
+      if (ev.key === 'ArrowLeft') { go(cur - 1); play(); }
+    });
+    /* arrastar no celular */
+    var x0 = null;
+    $('evsTrack').addEventListener('touchstart', function (ev) { x0 = ev.touches[0].clientX; }, { passive: true });
+    $('evsTrack').addEventListener('touchend', function (ev) {
+      if (x0 === null || list.length < 2) return;
+      var dx = ev.changedTouches[0].clientX - x0; x0 = null;
+      if (Math.abs(dx) > 40) { go(cur + (dx < 0 ? 1 : -1)); play(); }
+    });
+
+    render(E.snapshot());
+    E.live().then(function (d) { if (d) render(d); });
+  })();
   </script>
 
 </body>
